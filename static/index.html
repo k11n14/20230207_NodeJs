@@ -1,0 +1,92 @@
+<!-- static/index.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+		<!-- 🔽 追加 -->
+		<link rel="stylesheet" href="./css/style.css" />
+	</head>
+
+	<body>
+		<h1>なんかすごいアプリ</h1>
+		<!-- 🔽 表示を追加 -->
+		<table id="output">
+			<tbody>
+				<tr>
+					<td>now loading...</td>
+				</tr>
+			</tbody>
+		</table>
+
+		<!-- 🔽 追加 -->
+		<script>
+			// 🔽 追加
+			const requestToServer = async (url) => {
+				const response = await fetch(url);
+				const json = await response.json();
+				return json;
+			};
+
+			// 🔽 追加
+			const createElement = ({ data }) =>
+				[
+					`<tbody>`,
+					`<tr><td>日付</td><td>${data.weatherData.time}</td></tr>`,
+					`<tr><td>最高気温</td><td>${data.weatherData.temperature_2m_max}</td></tr>`,
+					`<tr><td>最低気温</td><td>${data.weatherData.temperature_2m_min}</td></tr>`,
+					`<tr><td>今日のクレド（ja）</td><td>${data.credoData.text_ja}</td></tr>`,
+					`</tbody>`,
+				].join("");
+
+			// alert("JavaScriptッ！書かずにはいられないッ！");
+			// 🔽 追加
+			const requestWithGeolocation = async (position) => {
+				const { latitude, longitude } = position.coords;
+				// console.log(latitude, longitude);
+				// 🔽 追加
+				const url = "http://localhost:3001/today";
+				const json = await requestToServer(
+					`${url}?latitude=${latitude}&longitude=${longitude}`
+				);
+				console.log(json);
+				// 🔽 追加
+				document.getElementById("output").innerHTML = createElement(json);
+			};
+
+			// 🔽 追加
+			const requestWithOutGeolocation = async (error) => {
+				// console.log(error);
+				// console.log("だめでした(´・ω・｀)");
+				// 🔽 追加
+				const url = "http://localhost:3001/today";
+				const json = await requestToServer(url);
+				console.log(json);
+				// 🔽 追加
+				document.getElementById("output").innerHTML = createElement(json);
+			};
+
+			// 🔽 追加
+			const options = {
+				maximumAge: 30000,
+				timeout: 10000,
+				enableHighAccuracy: true,
+			};
+
+			// 🔽 追加
+			// navigator.geolocation.getCurrentPosition
+			// 第 1 引数：位置情報取得成功時に実行する関数
+			// 第 2 引数：位置情報取得失敗時に実行する関数
+			// 第 3 引数：オプション
+
+			navigator.geolocation.getCurrentPosition(
+				requestWithGeolocation,
+				requestWithOutGeolocation,
+				options
+			);
+		</script>
+	</body>
+</html>
